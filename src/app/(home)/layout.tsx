@@ -11,7 +11,7 @@ export default function HomeLayout({
     <div className="min-h-screen flex flex-col w-full bg-background">
       <Header />
       <DesktopNav />
-      <main className="pt-20 lg:pt-0 flex-1 w-full">{children}</main>
+      <main className="pt-20 lg:pt-0 flex-1 w-full lg:pl-24">{children}</main>
       <Footer />
     </div>
   );

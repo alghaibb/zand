@@ -60,16 +60,13 @@ export default function NotFound() {
           </Button>
 
           <Button
-            asChild
             variant="ghost"
             size="lg"
             className="px-8 h-12 text-sm"
             onClick={() => window.history.back()}
           >
-            <button type="button" onClick={() => window.history.back()}>
-              <ArrowLeft className="w-4 h-4 mr-2" />
-              Go back
-            </button>
+            <ArrowLeft className="w-4 h-4 mr-2" />
+            Go back
           </Button>
         </motion.div>
 

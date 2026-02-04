@@ -2,21 +2,119 @@
 
 import { submitContactForm } from "@/app/(home)/contact-us/actions";
 import { LoadingButton } from "@/components/ui/button";
-import {
-  Field,
-  FieldDescription,
-  FieldError,
-  FieldGroup,
-  FieldLabel,
-  FieldSet,
-} from "@/components/ui/field";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import { contactSchema } from "@/lib/schemas/contact";
+import { cn } from "@/lib/utils";
+import { motion } from "motion/react";
 import { useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 type FieldErrors = Record<string, string>;
+
+interface FloatingInputProps
+  extends React.InputHTMLAttributes<HTMLInputElement> {
+  label: string;
+  error?: string;
+}
+
+function FloatingInput({
+  label,
+  error,
+  className,
+  id,
+  ...props
+}: FloatingInputProps) {
+  const [isFocused, setIsFocused] = useState(false);
+  const [hasValue, setHasValue] = useState(false);
+
+  return (
+    <div className="relative">
+      <input
+        id={id}
+        className={cn(
+          "peer w-full bg-transparent border-0 border-b-2 border-border px-0 py-3 text-foreground placeholder-transparent transition-colors focus:outline-none focus:border-primary",
+          error && "border-destructive focus:border-destructive",
+          className
+        )}
+        placeholder={label}
+        onFocus={() => setIsFocused(true)}
+        onBlur={(e) => {
+          setIsFocused(false);
+          setHasValue(!!e.target.value);
+        }}
+        onChange={(e) => setHasValue(!!e.target.value)}
+        aria-invalid={!!error}
+        {...props}
+      />
+      <label
+        htmlFor={id}
+        className={cn(
+          "absolute left-0 text-muted-foreground transition-all duration-200 pointer-events-none",
+          isFocused || hasValue || props.value
+            ? "-top-2 text-xs"
+            : "top-3 text-base",
+          isFocused && "text-primary",
+          error && "text-destructive"
+        )}
+      >
+        {label}
+      </label>
+      {error && <p className="text-destructive text-sm mt-2">{error}</p>}
+    </div>
+  );
+}
+
+interface FloatingTextareaProps
+  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+  label: string;
+  error?: string;
+}
+
+function FloatingTextarea({
+  label,
+  error,
+  className,
+  id,
+  ...props
+}: FloatingTextareaProps) {
+  const [isFocused, setIsFocused] = useState(false);
+  const [hasValue, setHasValue] = useState(false);
+
+  return (
+    <div className="relative">
+      <textarea
+        id={id}
+        className={cn(
+          "peer w-full bg-transparent border-0 border-b-2 border-border px-0 py-3 text-foreground placeholder-transparent transition-colors focus:outline-none focus:border-primary resize-none",
+          error && "border-destructive focus:border-destructive",
+          className
+        )}
+        placeholder={label}
+        onFocus={() => setIsFocused(true)}
+        onBlur={(e) => {
+          setIsFocused(false);
+          setHasValue(!!e.target.value);
+        }}
+        onChange={(e) => setHasValue(!!e.target.value)}
+        aria-invalid={!!error}
+        {...props}
+      />
+      <label
+        htmlFor={id}
+        className={cn(
+          "absolute left-0 text-muted-foreground transition-all duration-200 pointer-events-none",
+          isFocused || hasValue || props.value
+            ? "-top-2 text-xs"
+            : "top-3 text-base",
+          isFocused && "text-primary",
+          error && "text-destructive"
+        )}
+      >
+        {label}
+      </label>
+      {error && <p className="text-destructive text-sm mt-2">{error}</p>}
+    </div>
+  );
+}
 
 export function ContactForm() {
   const [isPending, startTransition] = useTransition();
@@ -55,6 +153,7 @@ export function ContactForm() {
         if (serverResult.success) {
           toast.success(serverResult.message);
           formRef.current?.reset();
+          setErrors({});
         } else {
           if (serverResult.errors) {
             setErrors(serverResult.errors);
@@ -69,95 +168,102 @@ export function ContactForm() {
   }
 
   return (
-    <div className="space-y-6">
-      <form ref={formRef} action={handleSubmit} className="space-y-6">
-        <FieldSet>
-          <FieldGroup className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Field data-invalid={!!errors.name}>
-              <FieldLabel htmlFor="name">Name *</FieldLabel>
-              <Input
-                id="name"
-                name="name"
-                type="text"
-                placeholder="Your full name"
-                aria-invalid={!!errors.name}
-                disabled={isPending}
-              />
-              <FieldError>{errors.name}</FieldError>
-            </Field>
-
-            <Field data-invalid={!!errors.email}>
-              <FieldLabel htmlFor="email">Email *</FieldLabel>
-              <Input
-                id="email"
-                name="email"
-                type="email"
-                placeholder="your.email@example.com"
-                aria-invalid={!!errors.email}
-                disabled={isPending}
-              />
-              <FieldError>{errors.email}</FieldError>
-            </Field>
-
-            <Field data-invalid={!!errors.phone}>
-              <FieldLabel htmlFor="phone">Phone</FieldLabel>
-              <Input
-                id="phone"
-                name="phone"
-                type="tel"
-                placeholder="+1 (555) 123-4567"
-                aria-invalid={!!errors.phone}
-                disabled={isPending}
-              />
-              <FieldError>{errors.phone}</FieldError>
-              <FieldDescription>
-                Optional: Include country code for international numbers.
-              </FieldDescription>
-            </Field>
-
-            <Field data-invalid={!!errors.subject}>
-              <FieldLabel htmlFor="subject">Subject</FieldLabel>
-              <Input
-                id="subject"
-                name="subject"
-                type="text"
-                placeholder="How can we help you?"
-                aria-invalid={!!errors.subject}
-                disabled={isPending}
-              />
-              <FieldError>{errors.subject}</FieldError>
-            </Field>
-          </FieldGroup>
-
-          <Field data-invalid={!!errors.message}>
-            <FieldLabel htmlFor="message">Message *</FieldLabel>
-            <Textarea
-              id="message"
-              name="message"
-              placeholder="Tell us more about your inquiry..."
-              rows={6}
-              aria-invalid={!!errors.message}
+    <form ref={formRef} action={handleSubmit}>
+      <div className="space-y-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1, duration: 0.5 }}
+          >
+            <FloatingInput
+              id="name"
+              name="name"
+              type="text"
+              label="Name *"
+              error={errors.name}
               disabled={isPending}
             />
-            <FieldError>{errors.message}</FieldError>
-            <FieldDescription>
-              Please provide as much detail as you&apos;d like. We&apos;re here
-              to help!
-            </FieldDescription>
-          </Field>
+          </motion.div>
 
-          <div className="flex pt-4 w-full">
-            <LoadingButton
-              type="submit"
-              className="min-w-32"
-              isLoading={isPending}
-              loadingText="Sending..."
-            >
-              Send Message
-            </LoadingButton>
-          </div>
-        </FieldSet>
-      </form>
-    </div>
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+          >
+            <FloatingInput
+              id="email"
+              name="email"
+              type="email"
+              label="Email *"
+              error={errors.email}
+              disabled={isPending}
+            />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.3, duration: 0.5 }}
+          >
+            <FloatingInput
+              id="phone"
+              name="phone"
+              type="tel"
+              label="Phone"
+              error={errors.phone}
+              disabled={isPending}
+            />
+          </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.4, duration: 0.5 }}
+          >
+            <FloatingInput
+              id="subject"
+              name="subject"
+              type="text"
+              label="Subject"
+              error={errors.subject}
+              disabled={isPending}
+            />
+          </motion.div>
+        </div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5, duration: 0.5 }}
+        >
+          <FloatingTextarea
+            id="message"
+            name="message"
+            label="Message *"
+            rows={4}
+            error={errors.message}
+            disabled={isPending}
+          />
+        </motion.div>
+
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.6, duration: 0.5 }}
+          className="pt-4"
+        >
+          <LoadingButton
+            type="submit"
+            size="lg"
+            className="w-full md:w-auto px-12"
+            isLoading={isPending}
+            loadingText="Sending..."
+          >
+            Send Message
+          </LoadingButton>
+        </motion.div>
+      </div>
+    </form>
   );
 }
