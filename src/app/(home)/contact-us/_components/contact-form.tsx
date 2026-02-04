@@ -143,7 +143,6 @@ export function ContactForm() {
         }
       }
       setErrors(fieldErrors);
-      toast.error("Please fill in all required fields and try again.");
       return;
     }
 
