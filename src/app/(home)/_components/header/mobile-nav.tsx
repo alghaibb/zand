@@ -51,12 +51,17 @@ export function MobileNav() {
         <button
           className="lg:hidden p-2 rounded-md hover:bg-accent transition-colors"
           aria-label="Toggle mobile menu"
+          suppressHydrationWarning
         >
           <Menu className="w-6 h-6" />
         </button>
       </SheetTrigger>
 
-      <SheetContent side="right" className="p-0 bg-card w-80 max-w-[85vw]">
+      <SheetContent
+        side="right"
+        className="p-0 bg-card w-80 max-w-[85vw]"
+        suppressHydrationWarning
+      >
         <SheetHeader className="p-6 border-b border-border">
           <SheetTitle className="text-xl font-bold">Zand</SheetTitle>
         </SheetHeader>
