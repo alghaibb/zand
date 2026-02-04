@@ -1,12 +1,11 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
-import { contactSchema } from "@/lib/schemas/contact";
 import { prisma } from "@/lib/db";
+import { contactSchema } from "@/lib/schemas/contact";
+import { revalidatePath } from "next/cache";
 
 export async function submitContactForm(formData: FormData) {
   try {
-    // Parse form data
     const rawData = {
       name: formData.get("name")?.toString() || "",
       email: formData.get("email")?.toString() || "",
@@ -15,10 +14,8 @@ export async function submitContactForm(formData: FormData) {
       message: formData.get("message")?.toString() || "",
     };
 
-    // Validate the data
     const validatedData = contactSchema.parse(rawData);
 
-    // Save to database
     await prisma.contact.create({
       data: {
         name: validatedData.name,
@@ -29,18 +26,16 @@ export async function submitContactForm(formData: FormData) {
       },
     });
 
-    // Revalidate the contact page
     revalidatePath("/contact-us");
 
     return { success: true, message: "Thank you for your message! We'll get back to you soon." };
   } catch (error) {
     if (error instanceof Error) {
-      // Handle validation errors
       if (error.name === "ZodError") {
         const zodError = error as { issues?: Array<{ path: string[]; message: string }> };
         return {
           success: false,
-          message: "Please check your input and try again.",
+          message: "Please fill in all required fields and try again.",
           errors: zodError.issues?.reduce((acc: Record<string, string>, issue) => {
             acc[issue.path[0]] = issue.message;
             return acc;
