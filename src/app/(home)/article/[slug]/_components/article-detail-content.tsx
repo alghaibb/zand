@@ -1,6 +1,6 @@
 "use client";
 
-import { Article } from "@/generated/prisma";
+import { Article } from "@/generated/prisma/client";
 import { motion } from "motion/react";
 import Link from "next/link";
 
