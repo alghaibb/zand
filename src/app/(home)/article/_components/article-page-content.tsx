@@ -1,0 +1,104 @@
+"use client";
+
+import { motion } from "motion/react";
+import Link from "next/link";
+
+const articles = [
+  {
+    slug: "lorem-ipsum-dolor",
+    title: "Lorem Ipsum Dolor Sit Amet Consectetur",
+    excerpt:
+      "Adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam quis nostrud.",
+    date: "January 15, 2026",
+    category: "Development",
+  },
+  {
+    slug: "sed-ut-perspiciatis",
+    title: "Sed Ut Perspiciatis Unde Omnis Iste",
+    excerpt:
+      "Natus error sit voluptatem accusantium doloremque laudantium totam rem aperiam eaque ipsa quae ab illo inventore.",
+    date: "January 10, 2026",
+    category: "Marketing",
+  },
+  {
+    slug: "nemo-enim-ipsam",
+    title: "Nemo Enim Ipsam Voluptatem Quia Voluptas",
+    excerpt:
+      "Sit aspernatur aut odit aut fugit sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.",
+    date: "January 5, 2026",
+    category: "Design",
+  },
+  {
+    slug: "neque-porro-quisquam",
+    title: "Neque Porro Quisquam Est Qui Dolorem",
+    excerpt:
+      "Ipsum quia dolor sit amet consectetur adipisci velit sed quia non numquam eius modi tempora incidunt.",
+    date: "December 28, 2025",
+    category: "Business",
+  },
+];
+
+export function ArticlePageContent() {
+  return (
+    <section className="py-32 lg:py-48 bg-background">
+      <div className="max-w-7xl mx-auto px-8 lg:px-16">
+        <motion.div
+          initial={{ opacity: 0, y: 50 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, ease: "easeOut" }}
+          className="mb-16 lg:mb-24"
+        >
+          <p className="text-sm uppercase tracking-widest text-muted-foreground mb-4">
+            Articles
+          </p>
+          <h1 className="text-4xl lg:text-6xl font-bold font-poppins tracking-tight mb-6">
+            Insights & Updates
+          </h1>
+          <p className="text-lg text-muted-foreground max-w-2xl">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
+            eiusmod tempor incididunt ut labore et dolore magna aliqua.
+          </p>
+        </motion.div>
+
+        <div className="space-y-0">
+          {articles.map((article, index) => (
+            <motion.div
+              key={article.slug}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.1 * index, duration: 0.5 }}
+            >
+              <Link
+                href={`/article/${article.slug}`}
+                className="group block border-t border-border py-8 lg:py-12 hover:bg-muted/30 transition-colors -mx-8 px-8 lg:-mx-16 lg:px-16"
+              >
+                <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-8">
+                  <span className="text-5xl font-bold text-muted-foreground/30 font-poppins">
+                    {String(index + 1).padStart(2, "0")}
+                  </span>
+                  <div className="flex-1">
+                    <div className="flex items-center gap-4 mb-2">
+                      <span className="text-xs uppercase tracking-wider text-primary">
+                        {article.category}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {article.date}
+                      </span>
+                    </div>
+                    <h2 className="text-xl lg:text-2xl font-semibold mb-2 group-hover:text-primary transition-colors">
+                      {article.title}
+                    </h2>
+                    <p className="text-muted-foreground">{article.excerpt}</p>
+                  </div>
+                  <span className="text-primary opacity-0 group-hover:opacity-100 transition-opacity hidden lg:block">
+                    →
+                  </span>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
