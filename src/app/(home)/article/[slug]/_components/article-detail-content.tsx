@@ -2,6 +2,7 @@
 
 import { Article } from "@/generated/prisma/client";
 import { motion } from "motion/react";
+import Image from "next/image";
 import Link from "next/link";
 
 interface ArticleDetailContentProps {
@@ -56,10 +57,12 @@ export function ArticleDetailContent({ article }: ArticleDetailContentProps) {
               transition={{ delay: 0.2, duration: 0.6 }}
               className="mb-12"
             >
-              <img
+              <Image
                 src={article.coverImage}
                 alt={article.title}
                 className="w-full h-auto rounded-lg"
+                width={1000}
+                height={1000}
               />
             </motion.div>
           )}
