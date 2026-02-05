@@ -3,42 +3,20 @@
 import { motion } from "motion/react";
 import Link from "next/link";
 
-const articles = [
-  {
-    slug: "lorem-ipsum-dolor",
-    title: "Lorem Ipsum Dolor Sit Amet Consectetur",
-    excerpt:
-      "Adipiscing elit sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam quis nostrud.",
-    date: "January 15, 2026",
-    category: "Development",
-  },
-  {
-    slug: "sed-ut-perspiciatis",
-    title: "Sed Ut Perspiciatis Unde Omnis Iste",
-    excerpt:
-      "Natus error sit voluptatem accusantium doloremque laudantium totam rem aperiam eaque ipsa quae ab illo inventore.",
-    date: "January 10, 2026",
-    category: "Marketing",
-  },
-  {
-    slug: "nemo-enim-ipsam",
-    title: "Nemo Enim Ipsam Voluptatem Quia Voluptas",
-    excerpt:
-      "Sit aspernatur aut odit aut fugit sed quia consequuntur magni dolores eos qui ratione voluptatem sequi nesciunt.",
-    date: "January 5, 2026",
-    category: "Design",
-  },
-  {
-    slug: "neque-porro-quisquam",
-    title: "Neque Porro Quisquam Est Qui Dolorem",
-    excerpt:
-      "Ipsum quia dolor sit amet consectetur adipisci velit sed quia non numquam eius modi tempora incidunt.",
-    date: "December 28, 2025",
-    category: "Business",
-  },
-];
+interface Article {
+  id: string;
+  title: string;
+  slug: string;
+  excerpt: string | null;
+  category: string | null;
+  publishedAt: Date | null;
+}
 
-export function ArticlePageContent() {
+interface ArticlePageContentProps {
+  articles: Article[];
+}
+
+export function ArticlePageContent({ articles }: ArticlePageContentProps) {
   return (
     <section className="py-32 lg:py-48 bg-background">
       <div className="max-w-7xl mx-auto px-8 lg:px-16">
@@ -55,49 +33,77 @@ export function ArticlePageContent() {
             Insights & Updates
           </h1>
           <p className="text-lg text-muted-foreground max-w-2xl">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do
-            eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            Explore our latest articles on web development, digital marketing,
+            design, and business insights.
           </p>
         </motion.div>
 
-        <div className="space-y-0">
-          {articles.map((article, index) => (
-            <motion.div
-              key={article.slug}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.1 * index, duration: 0.5 }}
-            >
-              <Link
-                href={`/article/${article.slug}`}
-                className="group block border-t border-border py-8 lg:py-12 hover:bg-muted/30 transition-colors -mx-8 px-8 lg:-mx-16 lg:px-16"
+        {articles.length === 0 ? (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="text-center py-16 border border-border rounded-lg"
+          >
+            <p className="text-muted-foreground">
+              No articles published yet. Check back soon!
+            </p>
+          </motion.div>
+        ) : (
+          <div className="space-y-0">
+            {articles.map((article, index) => (
+              <motion.div
+                key={article.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 * index, duration: 0.5 }}
               >
-                <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-8">
-                  <span className="text-5xl font-bold text-muted-foreground/30 font-poppins">
-                    {String(index + 1).padStart(2, "0")}
-                  </span>
-                  <div className="flex-1">
-                    <div className="flex items-center gap-4 mb-2">
-                      <span className="text-xs uppercase tracking-wider text-primary">
-                        {article.category}
-                      </span>
-                      <span className="text-xs text-muted-foreground">
-                        {article.date}
-                      </span>
+                <Link
+                  href={`/article/${article.slug}`}
+                  className="group block border-t border-border py-8 lg:py-12 hover:bg-muted/30 transition-colors -mx-8 px-8 lg:-mx-16 lg:px-16"
+                >
+                  <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-8">
+                    <span className="text-5xl font-bold text-muted-foreground/30 font-poppins">
+                      {String(index + 1).padStart(2, "0")}
+                    </span>
+                    <div className="flex-1">
+                      <div className="flex items-center gap-4 mb-2">
+                        {article.category && (
+                          <span className="text-xs uppercase tracking-wider text-primary">
+                            {article.category}
+                          </span>
+                        )}
+                        {article.publishedAt && (
+                          <span className="text-xs text-muted-foreground">
+                            {new Date(article.publishedAt).toLocaleDateString(
+                              "en-US",
+                              {
+                                year: "numeric",
+                                month: "long",
+                                day: "numeric",
+                              }
+                            )}
+                          </span>
+                        )}
+                      </div>
+                      <h2 className="text-xl lg:text-2xl font-semibold mb-2 group-hover:text-primary transition-colors">
+                        {article.title}
+                      </h2>
+                      {article.excerpt && (
+                        <p className="text-muted-foreground">
+                          {article.excerpt}
+                        </p>
+                      )}
                     </div>
-                    <h2 className="text-xl lg:text-2xl font-semibold mb-2 group-hover:text-primary transition-colors">
-                      {article.title}
-                    </h2>
-                    <p className="text-muted-foreground">{article.excerpt}</p>
+                    <span className="text-primary opacity-0 group-hover:opacity-100 transition-opacity hidden lg:block">
+                      →
+                    </span>
                   </div>
-                  <span className="text-primary opacity-0 group-hover:opacity-100 transition-opacity hidden lg:block">
-                    →
-                  </span>
-                </div>
-              </Link>
-            </motion.div>
-          ))}
-        </div>
+                </Link>
+              </motion.div>
+            ))}
+          </div>
+        )}
       </div>
     </section>
   );
