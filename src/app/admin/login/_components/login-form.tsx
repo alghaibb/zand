@@ -1,0 +1,46 @@
+"use client";
+
+import { LoadingButton } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useActionState } from "react";
+import { loginAction } from "../actions";
+
+interface LoginFormProps {
+  redirectTo?: string;
+}
+
+export function LoginForm({ redirectTo }: LoginFormProps) {
+  const [state, formAction, isPending] = useActionState(loginAction, null);
+
+  return (
+    <form action={formAction} className="space-y-6">
+      <input type="hidden" name="redirect" value={redirectTo || "/admin"} />
+
+      <div className="space-y-2">
+        <Label htmlFor="password">Password</Label>
+        <Input
+          id="password"
+          name="password"
+          type="password"
+          placeholder="Enter admin password"
+          disabled={isPending}
+          autoFocus
+        />
+      </div>
+
+      {state?.message && !state.success && (
+        <p className="text-sm text-destructive">{state.message}</p>
+      )}
+
+      <LoadingButton
+        type="submit"
+        className="w-full"
+        isLoading={isPending}
+        loadingText="Signing in..."
+      >
+        Sign In
+      </LoadingButton>
+    </form>
+  );
+}
