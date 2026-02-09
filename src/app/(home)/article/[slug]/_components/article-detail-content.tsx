@@ -4,6 +4,7 @@ import { Article } from "@/generated/prisma/client";
 import { motion } from "motion/react";
 import Image from "next/image";
 import Link from "next/link";
+import Markdown from "react-markdown";
 
 interface ArticleDetailContentProps {
   article: Article;
@@ -71,12 +72,9 @@ export function ArticleDetailContent({ article }: ArticleDetailContentProps) {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.3, duration: 0.6 }}
-            className="prose prose-lg dark:prose-invert max-w-none"
+            className="prose prose-lg dark:prose-invert max-w-none prose-headings:font-poppins prose-headings:tracking-tight prose-a:text-primary prose-a:no-underline hover:prose-a:underline prose-img:rounded-lg"
           >
-            {/* Simple rendering - you can add a markdown parser later */}
-            <div className="whitespace-pre-wrap text-foreground leading-relaxed">
-              {article.content}
-            </div>
+            <Markdown>{article.content}</Markdown>
           </motion.article>
 
           <motion.div

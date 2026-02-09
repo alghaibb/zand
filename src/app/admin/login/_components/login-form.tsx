@@ -14,8 +14,21 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
   const [state, formAction, isPending] = useActionState(loginAction, null);
 
   return (
-    <form action={formAction} className="space-y-6">
+    <form action={formAction} className="space-y-5">
       <input type="hidden" name="redirect" value={redirectTo || "/admin"} />
+
+      <div className="space-y-2">
+        <Label htmlFor="email">Email</Label>
+        <Input
+          id="email"
+          name="email"
+          type="email"
+          placeholder="admin@example.com"
+          disabled={isPending}
+          required
+          autoFocus
+        />
+      </div>
 
       <div className="space-y-2">
         <Label htmlFor="password">Password</Label>
@@ -23,14 +36,16 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
           id="password"
           name="password"
           type="password"
-          placeholder="Enter admin password"
+          placeholder="Enter your password"
           disabled={isPending}
-          autoFocus
+          required
         />
       </div>
 
       {state?.message && !state.success && (
-        <p className="text-sm text-destructive">{state.message}</p>
+        <div className="bg-destructive/10 text-destructive text-sm rounded-lg px-3 py-2.5 font-medium">
+          {state.message}
+        </div>
       )}
 
       <LoadingButton

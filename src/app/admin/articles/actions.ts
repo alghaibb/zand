@@ -2,6 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { articleSchema } from "@/lib/schemas/article";
+import { del } from "@vercel/blob";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 
@@ -114,8 +115,18 @@ export async function updateArticle(
 
     const current = await prisma.article.findUnique({
       where: { id },
-      select: { published: true, publishedAt: true },
+      select: { published: true, publishedAt: true, coverImage: true },
     });
+
+    // Delete old blob if cover image changed
+    const newCoverImage = result.data.coverImage || null;
+    if (current?.coverImage && current.coverImage !== newCoverImage) {
+      try {
+        await del(current.coverImage);
+      } catch (error) {
+        console.error("Error deleting old blob:", error);
+      }
+    }
 
     await prisma.article.update({
       where: { id },
@@ -147,8 +158,17 @@ export async function deleteArticle(id: string): Promise<ActionResult> {
   try {
     const article = await prisma.article.findUnique({
       where: { id },
-      select: { slug: true },
+      select: { slug: true, coverImage: true },
     });
+
+    // Delete cover image from Vercel Blob if it exists
+    if (article?.coverImage) {
+      try {
+        await del(article.coverImage);
+      } catch (error) {
+        console.error("Error deleting blob:", error);
+      }
+    }
 
     await prisma.article.delete({ where: { id } });
 

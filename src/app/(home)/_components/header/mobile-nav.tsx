@@ -9,7 +9,7 @@ import {
   SheetTrigger,
 } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
-import { ChevronRight, Menu } from "lucide-react";
+import { ChevronRight, Menu, Settings } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import { NAV_ITEMS, type NavItem } from "./constants";
@@ -25,7 +25,11 @@ function collectFirstLeafId(items: NavItem[]): string | undefined {
   return undefined;
 }
 
-export function MobileNav() {
+interface MobileNavProps {
+  isAdmin?: boolean;
+}
+
+export function MobileNav({ isAdmin }: MobileNavProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [activeItem, setActiveItem] = useState(
     collectFirstLeafId(NAV_ITEMS) ?? "home"
@@ -218,6 +222,29 @@ export function MobileNav() {
               );
             })()}
           </nav>
+
+          {isAdmin && (
+            <div className="pt-4 mt-4 border-t border-border">
+              <Link
+                href="/admin"
+                className={cn(
+                  buttonVariants({
+                    variant: "ghost",
+                    size: "default",
+                    className:
+                      "w-full justify-between px-3 py-2 hover:bg-accent text-left",
+                  })
+                )}
+                onClick={() => setIsOpen(false)}
+              >
+                <span className="font-medium flex items-center gap-3">
+                  <Settings className="w-4 h-4" />
+                  Admin Dashboard
+                </span>
+                <ChevronRight className="w-4 h-4 text-muted-foreground" />
+              </Link>
+            </div>
+          )}
         </div>
       </SheetContent>
     </Sheet>

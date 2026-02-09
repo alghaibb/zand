@@ -5,7 +5,24 @@ import { SessionData } from "@/lib/session";
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  if (pathname.startsWith("/admin") && pathname !== "/admin/login") {
+  // Allow setup and login pages without authentication
+  if (pathname === "/admin/login" || pathname === "/admin/setup") {
+    const response = NextResponse.next();
+    const session = await getIronSession<SessionData>(request, response, {
+      password: process.env.IRON_SESSION_PASSWORD!,
+      cookieName: "zand_admin_session",
+    });
+
+    // If already logged in, redirect from login to dashboard
+    if (session.isLoggedIn && pathname === "/admin/login") {
+      return NextResponse.redirect(new URL("/admin", request.url));
+    }
+
+    return response;
+  }
+
+  // All other admin routes require authentication
+  if (pathname.startsWith("/admin")) {
     const response = NextResponse.next();
     const session = await getIronSession<SessionData>(request, response, {
       password: process.env.IRON_SESSION_PASSWORD!,
@@ -17,18 +34,8 @@ export async function proxy(request: NextRequest) {
       loginUrl.searchParams.set("redirect", pathname);
       return NextResponse.redirect(loginUrl);
     }
-  }
 
-  if (pathname === "/admin/login") {
-    const response = NextResponse.next();
-    const session = await getIronSession<SessionData>(request, response, {
-      password: process.env.IRON_SESSION_PASSWORD!,
-      cookieName: "zand_admin_session",
-    });
-
-    if (session.isLoggedIn) {
-      return NextResponse.redirect(new URL("/admin", request.url));
-    }
+    return response;
   }
 
   return NextResponse.next();

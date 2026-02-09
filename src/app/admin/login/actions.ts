@@ -1,5 +1,7 @@
 "use server";
 
+import { prisma } from "@/lib/db";
+import { verifyPassword } from "@/lib/password";
 import { getSession } from "@/lib/session";
 import { redirect } from "next/navigation";
 
@@ -12,27 +14,39 @@ export async function loginAction(
   _prevState: LoginResult | null,
   formData: FormData
 ): Promise<LoginResult> {
+  const email = formData.get("email")?.toString().trim().toLowerCase() || "";
   const password = formData.get("password")?.toString() || "";
   const redirectTo = formData.get("redirect")?.toString() || "/admin";
 
-  if (!password) {
-    return { success: false, message: "Password is required" };
+  if (!email || !password) {
+    return { success: false, message: "Email and password are required" };
   }
 
-  const adminPassword = process.env.ADMIN_PASSWORD;
+  try {
+    const admin = await prisma.adminUser.findUnique({
+      where: { email },
+    });
 
-  if (!adminPassword) {
-    console.error("ADMIN_PASSWORD environment variable is not set");
-    return { success: false, message: "Server configuration error" };
+    if (!admin) {
+      return { success: false, message: "Invalid email or password" };
+    }
+
+    const isValid = await verifyPassword(password, admin.passwordHash);
+
+    if (!isValid) {
+      return { success: false, message: "Invalid email or password" };
+    }
+
+    const session = await getSession();
+    session.isLoggedIn = true;
+    session.userId = admin.id;
+    session.email = admin.email;
+    session.name = admin.name;
+    await session.save();
+  } catch (error) {
+    console.error("Login error:", error);
+    return { success: false, message: "An error occurred during login" };
   }
-
-  if (password !== adminPassword) {
-    return { success: false, message: "Invalid password" };
-  }
-
-  const session = await getSession();
-  session.isLoggedIn = true;
-  await session.save();
 
   redirect(redirectTo);
 }
