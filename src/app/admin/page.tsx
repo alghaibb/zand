@@ -22,15 +22,15 @@ export default async function AdminDashboardPage() {
         </div>
         <Link
           href="/admin/articles/new"
-          className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm shrink-0"
         >
           <Plus className="w-4 h-4" />
-          New Article
+          <span className="hidden sm:inline">New Article</span>
         </Link>
       </div>
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-8">
         <div className="bg-background rounded-xl border border-border p-5 shadow-sm">
           <div className="flex items-center justify-between mb-3">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
@@ -82,7 +82,7 @@ export default async function AdminDashboardPage() {
 
       {/* Recent Articles */}
       <div className="bg-background rounded-xl border border-border shadow-sm">
-        <div className="px-6 py-4 border-b border-border flex items-center justify-between">
+        <div className="px-4 sm:px-6 py-4 border-b border-border flex items-center justify-between">
           <h2 className="font-semibold text-sm">Recent Articles</h2>
           <Link
             href="/admin/articles"
@@ -113,7 +113,7 @@ export default async function AdminDashboardPage() {
               <Link
                 key={article.id}
                 href={`/admin/articles/${article.id}`}
-                className="flex items-center justify-between px-6 py-4 hover:bg-muted/50 transition-colors group"
+                className="flex items-center justify-between px-4 sm:px-6 py-4 hover:bg-muted/50 transition-colors group"
               >
                 <div className="min-w-0">
                   <p className="text-sm font-medium group-hover:text-primary transition-colors truncate">

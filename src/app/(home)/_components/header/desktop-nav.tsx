@@ -97,7 +97,7 @@ export function DesktopNav({ isAdmin }: DesktopNavProps) {
       >
         <Link
           href="/"
-          className="text-lg font-bold font-poppins text-sidebar-foreground py-2"
+          className="text-lg font-bold font-poppins text-sidebar-foreground py-2 transition-all duration-500 ease-in-out hover:[text-shadow:0_0_12px_var(--primary),0_0_24px_var(--primary),0_0_40px_color-mix(in_oklab,var(--primary)_50%,transparent)] hover:text-primary"
         >
           Z
         </Link>

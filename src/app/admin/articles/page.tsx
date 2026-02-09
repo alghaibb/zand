@@ -19,15 +19,15 @@ export default async function ArticlesPage() {
         </div>
         <Link
           href="/admin/articles/new"
-          className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-4 py-2.5 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm"
+          className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-3 py-2 sm:px-4 sm:py-2.5 rounded-lg text-sm font-medium hover:bg-primary/90 transition-colors shadow-sm shrink-0"
         >
           <Plus className="w-4 h-4" />
-          New Article
+          <span className="hidden sm:inline">New Article</span>
         </Link>
       </div>
 
       {articles.length === 0 ? (
-        <div className="bg-background rounded-xl border border-border shadow-sm p-16 text-center">
+        <div className="bg-background rounded-xl border border-border shadow-sm p-12 sm:p-16 text-center">
           <div className="w-14 h-14 rounded-xl bg-muted flex items-center justify-center mx-auto mb-4">
             <FileText className="w-7 h-7 text-muted-foreground" />
           </div>
@@ -45,8 +45,8 @@ export default async function ArticlesPage() {
         </div>
       ) : (
         <div className="bg-background rounded-xl border border-border shadow-sm overflow-hidden">
-          {/* Table Header */}
-          <div className="grid grid-cols-[1fr_120px_100px_100px] px-6 py-3 border-b border-border bg-muted/30">
+          {/* Table Header - desktop only */}
+          <div className="hidden md:grid grid-cols-[1fr_120px_100px_100px] px-6 py-3 border-b border-border bg-muted/30">
             <span className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
               Title
             </span>
@@ -61,47 +61,83 @@ export default async function ArticlesPage() {
             </span>
           </div>
 
-          {/* Table Rows */}
+          {/* Rows */}
           <div className="divide-y divide-border">
             {articles.map((article) => (
               <Link
                 key={article.id}
                 href={`/admin/articles/${article.id}`}
-                className="grid grid-cols-[1fr_120px_100px_100px] px-6 py-4 items-center hover:bg-muted/50 transition-colors group"
+                className="block px-4 sm:px-6 py-4 hover:bg-muted/50 transition-colors group"
               >
-                <div className="min-w-0">
-                  <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
-                    {article.title}
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5 truncate">
-                    /{article.slug}
-                  </p>
-                </div>
-                <div>
-                  {article.category ? (
-                    <span className="text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground font-medium">
-                      {article.category}
+                {/* Mobile layout */}
+                <div className="md:hidden">
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
+                        {article.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {article.createdAt.toLocaleDateString("en-US", {
+                          month: "short",
+                          day: "numeric",
+                        })}
+                        {article.category && (
+                          <span className="ml-2 px-1.5 py-0.5 rounded bg-muted text-muted-foreground text-[10px] font-medium">
+                            {article.category}
+                          </span>
+                        )}
+                      </p>
+                    </div>
+                    <span
+                      className={`text-[10px] font-medium px-2 py-0.5 rounded-full shrink-0 ${
+                        article.published
+                          ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                          : "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400"
+                      }`}
+                    >
+                      {article.published ? "Published" : "Draft"}
                     </span>
-                  ) : (
-                    <span className="text-xs text-muted-foreground/50">--</span>
-                  )}
+                  </div>
                 </div>
-                <span className="text-xs text-muted-foreground">
-                  {article.createdAt.toLocaleDateString("en-US", {
-                    month: "short",
-                    day: "numeric",
-                  })}
-                </span>
-                <div className="text-right">
-                  <span
-                    className={`text-xs font-medium px-2.5 py-1 rounded-full ${
-                      article.published
-                        ? "bg-green-500/10 text-green-600 dark:text-green-400"
-                        : "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400"
-                    }`}
-                  >
-                    {article.published ? "Published" : "Draft"}
+
+                {/* Desktop layout */}
+                <div className="hidden md:grid grid-cols-[1fr_120px_100px_100px] items-center">
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium truncate group-hover:text-primary transition-colors">
+                      {article.title}
+                    </p>
+                    <p className="text-xs text-muted-foreground mt-0.5 truncate">
+                      /{article.slug}
+                    </p>
+                  </div>
+                  <div>
+                    {article.category ? (
+                      <span className="text-xs px-2 py-0.5 rounded-md bg-muted text-muted-foreground font-medium">
+                        {article.category}
+                      </span>
+                    ) : (
+                      <span className="text-xs text-muted-foreground/50">
+                        --
+                      </span>
+                    )}
+                  </div>
+                  <span className="text-xs text-muted-foreground">
+                    {article.createdAt.toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                    })}
                   </span>
+                  <div className="text-right">
+                    <span
+                      className={`text-xs font-medium px-2.5 py-1 rounded-full ${
+                        article.published
+                          ? "bg-green-500/10 text-green-600 dark:text-green-400"
+                          : "bg-yellow-500/10 text-yellow-600 dark:text-yellow-400"
+                      }`}
+                    >
+                      {article.published ? "Published" : "Draft"}
+                    </span>
+                  </div>
                 </div>
               </Link>
             ))}

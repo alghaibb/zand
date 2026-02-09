@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { getSession } from "@/lib/session";
+import { AdminMobileHeader } from "./_components/admin-mobile-header";
 import { AdminSidebar } from "./_components/admin-sidebar";
 
 async function AdminShell({ children }: { children: React.ReactNode }) {
@@ -10,12 +11,17 @@ async function AdminShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="flex">
-      <AdminSidebar userName={session.name} userEmail={session.email} />
-      <main className="flex-1 min-h-screen">
-        <div className="p-6 lg:p-10 max-w-7xl">{children}</div>
-      </main>
-    </div>
+    <>
+      <AdminMobileHeader userName={session.name} userEmail={session.email} />
+      <div className="flex">
+        <div className="hidden lg:block">
+          <AdminSidebar userName={session.name} userEmail={session.email} />
+        </div>
+        <main className="flex-1 min-h-screen">
+          <div className="p-4 sm:p-6 lg:p-10 max-w-7xl">{children}</div>
+        </main>
+      </div>
+    </>
   );
 }
 
