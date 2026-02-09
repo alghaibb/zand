@@ -1,19 +1,10 @@
-import { prisma } from "@/lib/db";
+import { getDashboardStats, getRecentArticles } from "@/lib/queries";
 import { ArrowRight, FileText, Mail, Plus } from "lucide-react";
 import Link from "next/link";
 
 export default async function AdminDashboardPage() {
-  const [articleCount, contactCount, publishedCount] = await Promise.all([
-    prisma.article.count(),
-    prisma.contact.count(),
-    prisma.article.count({ where: { published: true } }),
-  ]);
-
-  const recentArticles = await prisma.article.findMany({
-    take: 5,
-    orderBy: { createdAt: "desc" },
-    select: { id: true, title: true, published: true, createdAt: true },
-  });
+  const [{ articleCount, contactCount, publishedCount }, recentArticles] =
+    await Promise.all([getDashboardStats(), getRecentArticles()]);
 
   const draftCount = articleCount - publishedCount;
 

@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { hashPassword } from "@/lib/password";
 import { getSession } from "@/lib/session";
-import { revalidatePath } from "next/cache";
+import { updateTag } from "next/cache";
 
 interface ActionResult {
   success: boolean;
@@ -51,7 +51,7 @@ export async function createAdminAction(
       data: { email, name, passwordHash },
     });
 
-    revalidatePath("/admin/settings");
+    updateTag("admin-users");
     return { success: true, message: "Admin user created successfully" };
   } catch (error) {
     console.error("Create admin error:", error);
@@ -78,7 +78,7 @@ export async function deleteAdminAction(adminId: string): Promise<ActionResult> 
 
   try {
     await prisma.adminUser.delete({ where: { id: adminId } });
-    revalidatePath("/admin/settings");
+    updateTag("admin-users");
     return { success: true, message: "Admin user deleted" };
   } catch (error) {
     console.error("Delete admin error:", error);

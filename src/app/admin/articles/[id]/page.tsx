@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { getArticleById } from "@/lib/queries";
 import { ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -14,9 +14,7 @@ export default async function EditArticlePage({
 }: EditArticlePageProps) {
   const { id } = await params;
 
-  const article = await prisma.article.findUnique({
-    where: { id },
-  });
+  const article = await getArticleById(id);
 
   if (!article) {
     notFound();

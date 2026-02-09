@@ -3,7 +3,7 @@
 import { prisma } from "@/lib/db";
 import { articleSchema } from "@/lib/schemas/article";
 import { del } from "@vercel/blob";
-import { revalidatePath } from "next/cache";
+import { updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 
 interface ActionResult {
@@ -62,8 +62,7 @@ export async function createArticle(
       },
     });
 
-    revalidatePath("/admin/articles");
-    revalidatePath("/article");
+    updateTag("articles");
   } catch (error) {
     console.error("Error creating article:", error);
     return { success: false, message: "Failed to create article" };
@@ -142,10 +141,7 @@ export async function updateArticle(
       },
     });
 
-    revalidatePath("/admin/articles");
-    revalidatePath(`/admin/articles/${id}`);
-    revalidatePath("/article");
-    revalidatePath(`/article/${result.data.slug}`);
+    updateTag("articles");
   } catch (error) {
     console.error("Error updating article:", error);
     return { success: false, message: "Failed to update article" };
@@ -172,11 +168,7 @@ export async function deleteArticle(id: string): Promise<ActionResult> {
 
     await prisma.article.delete({ where: { id } });
 
-    revalidatePath("/admin/articles");
-    revalidatePath("/article");
-    if (article?.slug) {
-      revalidatePath(`/article/${article.slug}`);
-    }
+    updateTag("articles");
 
     return { success: true, message: "Article deleted successfully" };
   } catch (error) {

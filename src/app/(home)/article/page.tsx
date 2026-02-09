@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { getPublishedArticles } from "@/lib/queries";
 import { Metadata } from "next";
 import { ArticlePageContent } from "./_components/article-page-content";
 
@@ -9,18 +9,7 @@ export const metadata: Metadata = {
 };
 
 export default async function ArticlePage() {
-  const articles = await prisma.article.findMany({
-    where: { published: true },
-    orderBy: { publishedAt: "desc" },
-    select: {
-      id: true,
-      title: true,
-      slug: true,
-      excerpt: true,
-      category: true,
-      publishedAt: true,
-    },
-  });
+  const articles = await getPublishedArticles();
 
   return <ArticlePageContent articles={articles} />;
 }

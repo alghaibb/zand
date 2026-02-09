@@ -2,7 +2,7 @@
 
 import { prisma } from "@/lib/db";
 import { contactSchema } from "@/lib/schemas/contact";
-import { revalidatePath } from "next/cache";
+import { updateTag } from "next/cache";
 
 export async function submitContactForm(formData: FormData) {
   try {
@@ -26,7 +26,7 @@ export async function submitContactForm(formData: FormData) {
       },
     });
 
-    revalidatePath("/contact-us");
+    updateTag("contacts");
 
     return { success: true, message: "Thank you for your message! We'll get back to you soon." };
   } catch (error) {

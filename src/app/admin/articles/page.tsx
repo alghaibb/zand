@@ -1,11 +1,9 @@
-import { prisma } from "@/lib/db";
+import { getAllArticles } from "@/lib/queries";
 import { FileText, Plus } from "lucide-react";
 import Link from "next/link";
 
 export default async function ArticlesPage() {
-  const articles = await prisma.article.findMany({
-    orderBy: { createdAt: "desc" },
-  });
+  const articles = await getAllArticles();
 
   return (
     <div>

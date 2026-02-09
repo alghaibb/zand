@@ -1,4 +1,7 @@
-import { prisma } from "@/lib/db";
+import {
+  getArticleMetaBySlug,
+  getPublishedArticleBySlug,
+} from "@/lib/queries";
 import { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { ArticleDetailContent } from "./_components/article-detail-content";
@@ -12,10 +15,7 @@ export async function generateMetadata({
 }: ArticleDetailPageProps): Promise<Metadata> {
   const { slug } = await params;
 
-  const article = await prisma.article.findUnique({
-    where: { slug, published: true },
-    select: { title: true, excerpt: true },
-  });
+  const article = await getArticleMetaBySlug(slug);
 
   if (!article) {
     return { title: "Article Not Found" };
@@ -32,9 +32,7 @@ export default async function ArticleDetailPage({
 }: ArticleDetailPageProps) {
   const { slug } = await params;
 
-  const article = await prisma.article.findUnique({
-    where: { slug, published: true },
-  });
+  const article = await getPublishedArticleBySlug(slug);
 
   if (!article) {
     notFound();

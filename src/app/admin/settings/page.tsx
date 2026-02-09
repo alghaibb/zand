@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { getAdminUsers } from "@/lib/queries";
 import { getSession } from "@/lib/session";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
@@ -15,15 +15,7 @@ export default async function SettingsPage() {
     redirect("/admin/login");
   }
 
-  const admins = await prisma.adminUser.findMany({
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      createdAt: true,
-    },
-    orderBy: { createdAt: "asc" },
-  });
+  const admins = await getAdminUsers();
 
   return (
     <div>
