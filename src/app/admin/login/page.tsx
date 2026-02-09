@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { getAdminCount } from "@/lib/queries";
 import { Metadata } from "next";
 import { redirect as redirectTo } from "next/navigation";
 import { LoginForm } from "./_components/login-form";
@@ -14,7 +14,7 @@ interface LoginPageProps {
 
 export default async function LoginPage({ searchParams }: LoginPageProps) {
   // If no admins exist, redirect to setup
-  const adminCount = await prisma.adminUser.count();
+  const adminCount = await getAdminCount();
   if (adminCount === 0) {
     redirectTo("/admin/setup");
   }

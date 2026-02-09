@@ -1,4 +1,4 @@
-import { prisma } from "@/lib/db";
+import { getAdminCount } from "@/lib/queries";
 import { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { SetupForm } from "./_components/setup-form";
@@ -16,7 +16,7 @@ export default async function SetupPage({ searchParams }: SetupPageProps) {
   const { secret } = await searchParams;
 
   // Check if any admin exists - if so, setup is permanently locked
-  const adminCount = await prisma.adminUser.count();
+  const adminCount = await getAdminCount();
   if (adminCount > 0) {
     redirect("/admin/login");
   }

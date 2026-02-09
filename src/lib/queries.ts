@@ -90,6 +90,13 @@ export async function getArticleMetaBySlug(slug: string) {
 
 // ─── Admin Users ─────────────────────────────────────────────────────────────
 
+export async function getAdminCount() {
+  cacheTag("admin-users");
+  cacheLife("minutes");
+
+  return prisma.adminUser.count();
+}
+
 export async function getAdminUsers() {
   cacheTag("admin-users");
   cacheLife("minutes");
