@@ -29,13 +29,13 @@ export function DeleteArticleButton({ id }: DeleteArticleButtonProps) {
 
   if (showConfirm) {
     return (
-      <div className="flex items-center gap-2">
-        <span className="text-sm text-muted-foreground">Delete?</span>
+      <div className="flex items-center gap-2 bg-destructive/10 px-3 py-1.5 rounded-lg">
+        <span className="text-xs font-medium text-destructive">Delete?</span>
         <button
           type="button"
           onClick={handleDelete}
           disabled={isPending}
-          className="text-sm text-destructive hover:underline disabled:opacity-50"
+          className="text-xs font-semibold text-destructive hover:underline disabled:opacity-50"
         >
           {isPending ? "Deleting..." : "Yes"}
         </button>
@@ -43,9 +43,9 @@ export function DeleteArticleButton({ id }: DeleteArticleButtonProps) {
           type="button"
           onClick={() => setShowConfirm(false)}
           disabled={isPending}
-          className="text-sm text-muted-foreground hover:underline disabled:opacity-50"
+          className="text-xs font-medium text-muted-foreground hover:underline disabled:opacity-50"
         >
-          No
+          Cancel
         </button>
       </div>
     );
@@ -55,9 +55,9 @@ export function DeleteArticleButton({ id }: DeleteArticleButtonProps) {
     <button
       type="button"
       onClick={() => setShowConfirm(true)}
-      className="inline-flex items-center gap-2 text-sm text-destructive hover:underline"
+      className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-destructive transition-colors"
     >
-      <Trash2 className="w-4 h-4" />
+      <Trash2 className="w-3.5 h-3.5" />
       Delete
     </button>
   );

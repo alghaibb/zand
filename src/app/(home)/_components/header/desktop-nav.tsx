@@ -1,5 +1,6 @@
 "use client";
 
+import { ThemeToggle } from "@/components/theme-toggle";
 import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import {
@@ -18,6 +19,7 @@ import {
   Megaphone,
   PenTool,
   PlaySquare,
+  Settings,
   Users,
   Workflow,
 } from "lucide-react";
@@ -65,7 +67,11 @@ function flattenIds(items: NavItem[]): string[] {
   return ids;
 }
 
-export function DesktopNav() {
+interface DesktopNavProps {
+  isAdmin?: boolean;
+}
+
+export function DesktopNav({ isAdmin }: DesktopNavProps) {
   const knownIds = flattenIds(NAV_ITEMS);
   const [activeItem, setActiveItem] = useState(knownIds[0] ?? "home");
   const [servicesOpen, setServicesOpen] = useState(false);
@@ -229,6 +235,32 @@ export function DesktopNav() {
             </div>
           )}
         </div>
+
+        <div className="w-6 h-px bg-sidebar-border my-1" />
+
+        <ThemeToggle className="h-10 w-10 flex items-center justify-center text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground" />
+
+        {isAdmin && (
+          <>
+            <div className="w-6 h-px bg-sidebar-border my-1" />
+            <Link
+              href="/admin"
+              className={cn(
+                buttonVariants({
+                  variant: "ghost",
+                  className: cn(
+                    "h-10 w-10 p-0 rounded-full flex items-center justify-center",
+                    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+                    "text-sidebar-foreground"
+                  ),
+                })
+              )}
+              title="Admin Dashboard"
+            >
+              <Settings className="w-5 h-5" />
+            </Link>
+          </>
+        )}
       </nav>
     </div>
   );

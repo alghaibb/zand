@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { ArrowLeft, ExternalLink } from "lucide-react";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArticleForm } from "../_components/article-form";
@@ -26,20 +27,24 @@ export default async function EditArticlePage({
       <div className="mb-8">
         <Link
           href="/admin/articles"
-          className="text-sm text-muted-foreground hover:text-primary transition-colors"
+          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
         >
-          ← Back to Articles
+          <ArrowLeft className="w-3.5 h-3.5" />
+          Back to Articles
         </Link>
-        <div className="flex items-center justify-between mt-4">
-          <h1 className="text-3xl font-bold font-poppins">Edit Article</h1>
-          <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between mt-3">
+          <h1 className="text-2xl font-bold font-poppins tracking-tight">
+            Edit Article
+          </h1>
+          <div className="flex items-center gap-3">
             {article.published && (
               <Link
                 href={`/article/${article.slug}`}
-                className="text-sm text-primary hover:underline"
                 target="_blank"
+                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
               >
-                View Article →
+                <ExternalLink className="w-3.5 h-3.5" />
+                View live
               </Link>
             )}
             <DeleteArticleButton id={article.id} />
