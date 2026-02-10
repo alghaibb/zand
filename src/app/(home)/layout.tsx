@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import { getSession } from "@/lib/session";
+import { PWAInstallPrompt } from "@/components/pwa-install-prompt";
 import { Footer } from "./_components/footer";
 import { DesktopNav } from "./_components/header/desktop-nav";
 import { Header } from "./_components/header/header";
@@ -35,6 +36,7 @@ export default function HomeLayout({
       </Suspense>
       <main className="pt-20 lg:pt-0 flex-1 w-full lg:pl-24">{children}</main>
       <Footer />
+      <PWAInstallPrompt />
     </div>
   );
 }

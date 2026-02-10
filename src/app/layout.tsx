@@ -1,8 +1,9 @@
 import { Toaster } from "@/components/ui/sonner";
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { ThemeProvider } from "next-themes";
 import { Inter, Poppins } from "next/font/google";
 import "./globals.css";
+import { SerwistProvider } from "./serwist";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-sans" });
 
@@ -12,13 +13,19 @@ const poppins = Poppins({
   weight: ["100", "200", "300", "400", "500", "600", "700", "800", "900"],
 });
 
+const APP_NAME = "Zand";
+const APP_DEFAULT_TITLE = "Zand | Digital Agency & Web Development";
+const APP_TITLE_TEMPLATE = "%s | Zand";
+const APP_DESCRIPTION =
+  "Zand is a full-service digital agency specializing in web development, digital marketing, graphic design, commercial photography, and videography. We help businesses build stunning websites, implement enterprise solutions, and grow their online presence.";
+
 export const metadata: Metadata = {
+  applicationName: APP_NAME,
   title: {
-    template: "%s | Zand",
-    absolute: "Zand | Digital Agency & Web Development",
+    template: APP_TITLE_TEMPLATE,
+    absolute: APP_DEFAULT_TITLE,
   },
-  description:
-    "Zand is a full-service digital agency specializing in web development, digital marketing, graphic design, commercial photography, and videography. We help businesses build stunning websites, implement enterprise solutions, and grow their online presence.",
+  description: APP_DESCRIPTION,
   keywords: [
     "web development",
     "digital agency",
@@ -45,20 +52,30 @@ export const metadata: Metadata = {
     index: true,
     follow: true,
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: APP_DEFAULT_TITLE,
+  },
+  formatDetection: {
+    telephone: false,
+  },
   openGraph: {
     type: "website",
     locale: "en_AU",
-    siteName: "Zand",
-    title: "Zand | Digital Agency & Web Development",
-    description:
-      "Full-service digital agency specializing in web development, digital marketing, graphic design, commercial photography, and videography.",
+    siteName: APP_NAME,
+    title: APP_DEFAULT_TITLE,
+    description: APP_DESCRIPTION,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Zand | Digital Agency & Web Development",
-    description:
-      "Full-service digital agency specializing in web development, digital marketing, graphic design, commercial photography, and videography.",
+    title: APP_DEFAULT_TITLE,
+    description: APP_DESCRIPTION,
   },
+};
+
+export const viewport: Viewport = {
+  themeColor: "#09090b",
 };
 
 export default function RootLayout({
@@ -75,7 +92,9 @@ export default function RootLayout({
           enableSystem
           disableTransitionOnChange
         >
-          {children}
+          <SerwistProvider swUrl="/serwist/sw.js">
+            {children}
+          </SerwistProvider>
           <Toaster richColors closeButton theme="light" />
         </ThemeProvider>
       </body>
