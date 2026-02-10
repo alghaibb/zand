@@ -30,11 +30,13 @@ const navItems = [
 interface AdminMobileHeaderProps {
   userName?: string;
   userEmail?: string;
+  userRole?: "SUPER_ADMIN" | "ADMIN";
 }
 
 export function AdminMobileHeader({
   userName,
   userEmail,
+  userRole,
 }: AdminMobileHeaderProps) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
@@ -140,9 +142,16 @@ export function AdminMobileHeader({
                   </div>
                   <div className="min-w-0">
                     {userName && (
-                      <p className="text-sm font-medium truncate leading-tight">
-                        {userName}
-                      </p>
+                      <div className="flex items-center gap-1.5">
+                        <p className="text-sm font-medium truncate leading-tight">
+                          {userName}
+                        </p>
+                        {userRole === "SUPER_ADMIN" && (
+                          <span className="text-[9px] font-medium text-amber-600 dark:text-amber-400 bg-amber-500/10 px-1 py-0.5 rounded shrink-0">
+                            Super
+                          </span>
+                        )}
+                      </div>
                     )}
                     {userEmail && (
                       <p className="text-xs text-muted-foreground truncate leading-tight mt-0.5">
