@@ -2,13 +2,50 @@
 
 import { submitContactForm } from "@/app/(home)/contact-us/actions";
 import { LoadingButton } from "@/components/ui/button";
+import { useOnlineStatus } from "@/hooks/use-online-status";
 import { contactSchema } from "@/lib/schemas/contact";
 import { cn } from "@/lib/utils";
+import { WifiOff } from "lucide-react";
 import { motion } from "motion/react";
-import { useRef, useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { toast } from "sonner";
 
 type FieldErrors = Record<string, string>;
+
+const QUEUE_KEY = "zand_contact_queue";
+
+interface QueuedSubmission {
+  data: Record<string, string>;
+  timestamp: number;
+}
+
+function getQueue(): QueuedSubmission[] {
+  try {
+    const raw = localStorage.getItem(QUEUE_KEY);
+    return raw ? (JSON.parse(raw) as QueuedSubmission[]) : [];
+  } catch (error) {
+    console.error("Failed to read contact queue:", error);
+    return [];
+  }
+}
+
+function addToQueue(data: Record<string, string>) {
+  try {
+    const queue = getQueue();
+    queue.push({ data, timestamp: Date.now() });
+    localStorage.setItem(QUEUE_KEY, JSON.stringify(queue));
+  } catch (error) {
+    console.error("Failed to save to contact queue:", error);
+  }
+}
+
+function clearQueue() {
+  try {
+    localStorage.removeItem(QUEUE_KEY);
+  } catch (error) {
+    console.error("Failed to clear contact queue:", error);
+  }
+}
 
 interface FloatingInputProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -120,6 +157,37 @@ export function ContactForm() {
   const [isPending, startTransition] = useTransition();
   const [errors, setErrors] = useState<FieldErrors>({});
   const formRef = useRef<HTMLFormElement>(null);
+  const isOnline = useOnlineStatus();
+
+  // Replay queued submissions when coming back online
+  useEffect(() => {
+    if (!isOnline) return;
+
+    const queue = getQueue();
+    if (queue.length === 0) return;
+
+    clearQueue();
+
+    for (const item of queue) {
+      const formData = new FormData();
+      for (const [key, value] of Object.entries(item.data)) {
+        formData.append(key, value);
+      }
+
+      submitContactForm(formData)
+        .then((result) => {
+          if (result.success) {
+            toast.success("Queued message sent successfully!");
+          } else {
+            toast.error(`Failed to send queued message: ${result.message}`);
+          }
+        })
+        .catch((error) => {
+          console.error("Failed to replay queued submission:", error);
+          toast.error("Failed to send a queued message. Please try again.");
+        });
+    }
+  }, [isOnline]);
 
   async function handleSubmit(formData: FormData) {
     setErrors({});
@@ -146,6 +214,16 @@ export function ContactForm() {
       return;
     }
 
+    // If offline, queue the submission
+    if (!isOnline) {
+      addToQueue(rawData);
+      toast.info(
+        "You're offline. Your message has been saved and will be sent when you're back online."
+      );
+      formRef.current?.reset();
+      return;
+    }
+
     startTransition(async () => {
       try {
         const serverResult = await submitContactForm(formData);
@@ -160,14 +238,33 @@ export function ContactForm() {
           toast.error(serverResult.message);
         }
       } catch (error) {
-        console.error(error);
-        toast.error("An unexpected error occurred. Please try again.");
+        console.error("Contact form submission error:", error);
+        // If the submission fails due to network, queue it
+        addToQueue(rawData);
+        toast.info(
+          "Connection lost. Your message has been saved and will be sent when you're back online."
+        );
+        formRef.current?.reset();
       }
     });
   }
 
   return (
     <form ref={formRef} action={handleSubmit}>
+      {!isOnline && (
+        <motion.div
+          initial={{ opacity: 0, height: 0 }}
+          animate={{ opacity: 1, height: "auto" }}
+          className="mb-6 flex items-center gap-3 rounded-lg bg-amber-500/10 border border-amber-500/20 px-4 py-3 text-sm text-amber-700 dark:text-amber-400"
+        >
+          <WifiOff className="w-4 h-4 shrink-0" />
+          <span>
+            You&apos;re offline. Your message will be queued and sent
+            automatically when you reconnect.
+          </span>
+        </motion.div>
+      )}
+
       <div className="space-y-10">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
           <motion.div
@@ -259,7 +356,7 @@ export function ContactForm() {
             isLoading={isPending}
             loadingText="Sending..."
           >
-            Send Message
+            {isOnline ? "Send Message" : "Queue Message"}
           </LoadingButton>
         </motion.div>
       </div>
