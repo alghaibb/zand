@@ -2,6 +2,11 @@
 
 import { prisma } from "@/lib/db";
 import { hashPassword } from "@/lib/password";
+import {
+  changePasswordSchema,
+  createAdminSchema,
+  editAdminSchema,
+} from "@/lib/schemas/admin";
 import { getSession } from "@/lib/session";
 import { updateTag } from "next/cache";
 
@@ -11,31 +16,64 @@ interface ActionResult {
   errors?: Record<string, string>;
 }
 
-export async function createAdminAction(
-  _prevState: ActionResult | null,
-  formData: FormData
-): Promise<ActionResult> {
+// ─── Helper: require super admin ────────────────────────────────────────────
+
+async function requireSuperAdmin(): Promise<ActionResult | null> {
   const session = await getSession();
   if (!session.isLoggedIn) {
     return { success: false, message: "Unauthorized" };
   }
-
-  const name = formData.get("name")?.toString().trim() || "";
-  const email = formData.get("email")?.toString().trim().toLowerCase() || "";
-  const password = formData.get("password")?.toString() || "";
-
-  const errors: Record<string, string> = {};
-  if (!name) errors.name = "Name is required";
-  if (!email) errors.email = "Email is required";
-  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
-    errors.email = "Invalid email address";
-  if (!password) errors.password = "Password is required";
-  if (password.length < 8)
-    errors.password = "Password must be at least 8 characters";
-
-  if (Object.keys(errors).length > 0) {
-    return { success: false, message: "Please fix the errors below", errors };
+  if (session.role !== "SUPER_ADMIN") {
+    return {
+      success: false,
+      message: "Only super admins can perform this action",
+    };
   }
+  return null;
+}
+
+// ─── Helper: format Zod errors ──────────────────────────────────────────────
+
+function formatZodErrors(
+  issues: { path: PropertyKey[]; message: string }[]
+): Record<string, string> {
+  const errors: Record<string, string> = {};
+  for (const issue of issues) {
+    const field = String(issue.path[0]);
+    if (!errors[field]) {
+      errors[field] = issue.message;
+    }
+  }
+  return errors;
+}
+
+// ─── Create Admin ───────────────────────────────────────────────────────────
+
+export async function createAdminAction(
+  _prevState: ActionResult | null,
+  formData: FormData
+): Promise<ActionResult> {
+  const denied = await requireSuperAdmin();
+  if (denied) return denied;
+
+  const raw = {
+    name: formData.get("name")?.toString() || "",
+    email: formData.get("email")?.toString() || "",
+    password: formData.get("password")?.toString() || "",
+    role: formData.get("role")?.toString() || "ADMIN",
+  };
+
+  const parsed = createAdminSchema.safeParse(raw);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: "Please fix the errors below",
+      errors: formatZodErrors(parsed.error.issues),
+    };
+  }
+
+  const { name, email, password, role } = parsed.data;
 
   try {
     const existing = await prisma.adminUser.findUnique({ where: { email } });
@@ -48,7 +86,7 @@ export async function createAdminAction(
 
     const passwordHash = await hashPassword(password);
     await prisma.adminUser.create({
-      data: { email, name, passwordHash },
+      data: { email, name, passwordHash, role },
     });
 
     updateTag("admin-users");
@@ -59,15 +97,163 @@ export async function createAdminAction(
   }
 }
 
-export async function deleteAdminAction(adminId: string): Promise<ActionResult> {
-  const session = await getSession();
-  if (!session.isLoggedIn) {
-    return { success: false, message: "Unauthorized" };
+// ─── Edit Admin ─────────────────────────────────────────────────────────────
+
+export async function editAdminAction(
+  adminId: string,
+  data: { name: string; email: string; role: string }
+): Promise<ActionResult> {
+  const denied = await requireSuperAdmin();
+  if (denied) return denied;
+
+  const parsed = editAdminSchema.safeParse(data);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: "Please fix the errors below",
+      errors: formatZodErrors(parsed.error.issues),
+    };
   }
+
+  const { name, email, role } = parsed.data;
+
+  const session = await getSession();
+  const target = await prisma.adminUser.findUnique({
+    where: { id: adminId },
+    select: { role: true },
+  });
+
+  // Prevent editing another super admin (can only edit self or regular admins)
+  if (target?.role === "SUPER_ADMIN" && session.userId !== adminId) {
+    return {
+      success: false,
+      message: "You cannot modify another super admin's account",
+    };
+  }
+
+  // Prevent demoting the last super admin
+  if (role === "ADMIN" && target?.role === "SUPER_ADMIN") {
+    const superAdminCount = await prisma.adminUser.count({
+      where: { role: "SUPER_ADMIN" },
+    });
+    if (superAdminCount <= 1) {
+      return {
+        success: false,
+        message: "Cannot demote the last super admin",
+      };
+    }
+  }
+
+  try {
+    // Check email uniqueness (excluding current admin)
+    const existing = await prisma.adminUser.findUnique({
+      where: { email },
+    });
+    if (existing && existing.id !== adminId) {
+      return {
+        success: false,
+        message: "An admin with this email already exists",
+      };
+    }
+
+    await prisma.adminUser.update({
+      where: { id: adminId },
+      data: { name, email, role },
+    });
+
+    // Update session if editing self
+    if (session.userId === adminId) {
+      session.name = name;
+      session.email = email;
+      session.role = role;
+      await session.save();
+    }
+
+    updateTag("admin-users");
+    return { success: true, message: "Admin user updated successfully" };
+  } catch (error) {
+    console.error("Edit admin error:", error);
+    return { success: false, message: "Failed to update admin user" };
+  }
+}
+
+// ─── Change Password ────────────────────────────────────────────────────────
+
+export async function changePasswordAction(
+  adminId: string,
+  data: { password: string; confirmPassword: string }
+): Promise<ActionResult> {
+  const denied = await requireSuperAdmin();
+  if (denied) return denied;
+
+  // Prevent changing another super admin's password
+  const session = await getSession();
+  if (session.userId !== adminId) {
+    const target = await prisma.adminUser.findUnique({
+      where: { id: adminId },
+      select: { role: true },
+    });
+    if (target?.role === "SUPER_ADMIN") {
+      return {
+        success: false,
+        message: "You cannot change another super admin's password",
+      };
+    }
+  }
+
+  const parsed = changePasswordSchema.safeParse(data);
+
+  if (!parsed.success) {
+    return {
+      success: false,
+      message: parsed.error.issues[0]?.message || "Invalid input",
+    };
+  }
+
+  try {
+    const passwordHash = await hashPassword(parsed.data.password);
+    await prisma.adminUser.update({
+      where: { id: adminId },
+      data: { passwordHash },
+    });
+
+    return { success: true, message: "Password changed successfully" };
+  } catch (error) {
+    console.error("Change password error:", error);
+    return { success: false, message: "Failed to change password" };
+  }
+}
+
+// ─── Delete Admin ───────────────────────────────────────────────────────────
+
+export async function deleteAdminAction(
+  adminId: string
+): Promise<ActionResult> {
+  const denied = await requireSuperAdmin();
+  if (denied) return denied;
+
+  if (!adminId || typeof adminId !== "string") {
+    return { success: false, message: "Invalid admin ID" };
+  }
+
+  const session = await getSession();
 
   // Prevent deleting yourself
   if (session.userId === adminId) {
     return { success: false, message: "You cannot delete your own account" };
+  }
+
+  // Prevent deleting another super admin
+  const target = await prisma.adminUser.findUnique({
+    where: { id: adminId },
+    select: { role: true },
+  });
+  if (target?.role === "SUPER_ADMIN") {
+    return {
+      success: false,
+      message: "You cannot delete another super admin",
+    };
   }
 
   // Prevent deleting the last admin

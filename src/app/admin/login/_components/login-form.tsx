@@ -28,6 +28,9 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
           required
           autoFocus
         />
+        {state?.errors?.email && (
+          <p className="text-sm text-destructive">{state.errors.email}</p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -40,9 +43,12 @@ export function LoginForm({ redirectTo }: LoginFormProps) {
           disabled={isPending}
           required
         />
+        {state?.errors?.password && (
+          <p className="text-sm text-destructive">{state.errors.password}</p>
+        )}
       </div>
 
-      {state?.message && !state.success && (
+      {state?.message && !state.success && !state.errors && (
         <div className="bg-destructive/10 text-destructive text-sm rounded-lg px-3 py-2.5 font-medium">
           {state.message}
         </div>

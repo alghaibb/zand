@@ -3,6 +3,13 @@
 import { LoadingButton } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { useActionState, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { createAdminAction } from "../actions";
@@ -55,19 +62,37 @@ export function InviteAdminForm() {
         </div>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="invite-password">Password</Label>
-        <Input
-          id="invite-password"
-          name="password"
-          type="password"
-          placeholder="Min 8 characters"
-          disabled={isPending}
-          required
-        />
-        {state?.errors?.password && (
-          <p className="text-sm text-destructive">{state.errors.password}</p>
-        )}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="invite-password">Password</Label>
+          <Input
+            id="invite-password"
+            name="password"
+            type="password"
+            placeholder="Min 8 characters"
+            disabled={isPending}
+            required
+          />
+          {state?.errors?.password && (
+            <p className="text-sm text-destructive">{state.errors.password}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label>Role</Label>
+          <Select name="role" defaultValue="ADMIN" disabled={isPending}>
+            <SelectTrigger className="w-full">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="ADMIN">Admin</SelectItem>
+              <SelectItem value="SUPER_ADMIN">Super Admin</SelectItem>
+            </SelectContent>
+          </Select>
+          {state?.errors?.role && (
+            <p className="text-sm text-destructive">{state.errors.role}</p>
+          )}
+        </div>
       </div>
 
       {state?.message && !state.success && !state.errors && (

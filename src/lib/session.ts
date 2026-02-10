@@ -6,6 +6,7 @@ export interface SessionData {
   userId?: string;
   email?: string;
   name?: string;
+  role?: "SUPER_ADMIN" | "ADMIN";
 }
 
 const sessionOptions = {
